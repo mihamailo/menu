@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}*{box-sizing:border-box}</style>
+<title>Наше меню</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap">
+<style>
+  /* Layout: one narrow column like a note on the fridge — a header with the week's dates, then seven day cards; today's card is open and marked. */
+  :root {
+    --bg: #f3f5ee;
+    --card: #ffffff;
+    --fg: #23281f;
+    --muted: #6b7363;
+    --line: #dfe4d6;
+    --accent: #b4325a;
+    --accent-soft: #f8e3ea;
+    --herb: #4f6b3a;
+    --herb-soft: #e6eedc;
+    --font-hand: "Caveat", "Segoe Print", cursive;
+    --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171a15; --card: #20241d; --fg: #eef1e8; --muted: #a2ab98; --line: #333a2d;
+      --accent: #f07a9c; --accent-soft: #3a2029; --herb: #a9c78e; --herb-soft: #26301f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171a15; --card: #20241d; --fg: #eef1e8; --muted: #a2ab98; --line: #333a2d;
+    --accent: #f07a9c; --accent-soft: #3a2029; --herb: #a9c78e; --herb-soft: #26301f;
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+  .wrap {
+    max-width: 560px; margin: 0 auto;
+    padding-block: 28px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid; gap: 20px;
+  }
+
+  header { display: grid; gap: 4px; }
+  .hello { font-family: var(--font-hand); font-size: 1.7rem; color: var(--accent); line-height: 1.1; }
+  h1 { margin: 0; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; }
+  .range { color: var(--muted); font-weight: 500; }
+
+  .days { display: grid; gap: 12px; }
+  details.day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden;
+  }
+  details.day.today { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  summary {
+    list-style: none; cursor: pointer;
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 14px 16px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 16px; }
+  .dname { font-weight: 800; font-size: 1.1rem; }
+  .ddate { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .badge {
+    margin-left: auto; align-self: center;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    background: var(--accent); color: var(--card); padding: 3px 9px; border-radius: 999px;
+  }
+  .chev { margin-left: auto; align-self: center; color: var(--muted); transition: transform .2s; }
+  .today .chev { margin-left: 8px; }
+  details[open] .chev { transform: rotate(180deg); }
+
+  .meals { display: grid; gap: 0; padding: 0 16px 8px; }
+  .meal { display: grid; grid-template-columns: 74px 1fr; gap: 12px; padding: 12px 0; border-top: 1px dashed var(--line); }
+  .mlabel {
+    font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--herb); padding-top: 3px;
+  }
+  .mtext { min-width: 0; }
+
+  footer { text-align: center; font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="hello">Наше меню</div>
+    <h1>Что готовим на неделе</h1>
+    <div class="range" id="range"></div>
+  </header>
+
+  <main class="days" id="days"></main>
+
+  <footer>Приятного аппетита!</footer>
+</div>
+
+<script>
+  // ===== Edit only this block each week =====
+  const WEEK_START = "2026-11-23"; // Monday, YYYY-MM-DD
+  const MENU = [
+    ["Сырники со сметаной и ягодным джемом.",
+     "Борщ со сметаной и чесночными пампушками.",
+     "Паста карбонара с беконом и пармезаном."],
+    ["Омлет с помидорами, сыром и зеленью, хрустящие тосты.",
+     "Плов с курицей и морковью, салат из свежих овощей.",
+     "Запечённая рыба с картофелем, лимоном и укропом."],
+    ["Гранола с йогуртом, мёдом и тёртым яблоком.",
+     "Домашняя куриная лапша с зеленью.",
+     "Ленивые голубцы в томатно-сметанном соусе."],
+    ["Тосты с авокадо и яйцом пашот.",
+     "Тефтели с картофельным пюре, огурцы со сметаной.",
+     "Домашние бургеры с говяжьей котлетой, сыром и картошкой фри."],
+    ["Манная каша со сливочным маслом и малиновым вареньем.",
+     "Грибной крем-суп с гренками.",
+     "Запечённый лосось с рисом и брокколи."],
+    ["Французские тосты с корицей и ягодами.",
+     "Пельмени со сметаной и зеленью.",
+     "Тако с говяжьим фаршем, сыром, салатом и сальсой."],
+    ["Шакшука с поджаренным хлебом.",
+     "Рамен с курицей, яйцом и зелёным луком.",
+     "Лазанья с мясным соусом и сыром."]
+  ];
+  // ===========================================
+
+  const DAY_NAMES = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"];
+  const MEAL_NAMES = ["Завтрак","Обед","Ужин"];
+  const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+  const [y, m, d] = WEEK_START.split("-").map(Number);
+  const start = new Date(y, m - 1, d);
+  const dayDate = i => new Date(y, m - 1, d + i);
+  const fmt = dt => dt.getDate() + " " + MONTHS[dt.getMonth()];
+
+  const end = dayDate(6);
+  document.getElementById("range").textContent =
+    start.getMonth() === end.getMonth()
+      ? start.getDate() + "–" + fmt(end)
+      : fmt(start) + " – " + fmt(end);
+
+  const now = new Date();
+  const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  let todayIndex = -1;
+  for (let i = 0; i < 7; i++) if (dayDate(i).getTime() === todayKey) todayIndex = i;
+  const openIndex = todayIndex >= 0 ? todayIndex : 0;
+
+  const esc = s => s.replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  document.getElementById("days").innerHTML = MENU.map((meals, i) => `
+    <details class="day${i === todayIndex ? " today" : ""}"${i === openIndex ? " open" : ""}>
+      <summary>
+        <span class="dname">${DAY_NAMES[i]}</span>
+        <span class="ddate">${fmt(dayDate(i))}</span>
+        ${i === todayIndex ? '<span class="badge">сегодня</span>' : ""}
+        <span class="chev" aria-hidden="true">▾</span>
+      </summary>
+      <div class="meals">
+        ${meals.map((t, j) => `
+          <div class="meal"><div class="mlabel">${MEAL_NAMES[j]}</div><div class="mtext">${esc(t)}</div></div>
+        `).join("")}
+      </div>
+    </details>
+  `).join("");
+</script>
+</body>
+</html>
