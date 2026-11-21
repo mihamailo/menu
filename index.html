@@ -90,6 +90,32 @@
 
   footer { text-align: center; font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
 
+  .buy { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    font-size: 0.8rem; line-height: 1.3; color: var(--herb);
+    background: var(--herb-soft); padding: 3px 9px; border-radius: 999px;
+  }
+
+  .shop { background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+  .shop summary { padding: 16px; }
+  .shop h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+  .count { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .shop .chev { margin-left: auto; }
+  .shoplist { list-style: none; margin: 0; padding: 0 16px 12px; display: grid; }
+  .shoplist li { border-top: 1px dashed var(--line); }
+  .shoplist label { display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
+  .shoplist input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+  .shoplist .name { flex: 1; min-width: 0; }
+  .shoplist .used { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .shoplist input:checked ~ .name { text-decoration: line-through; color: var(--muted); }
+  .shopfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 16px 16px; }
+  .note { color: var(--muted); font-size: 0.82rem; }
+  .reset {
+    font: inherit; font-size: 0.85rem; font-weight: 700; color: var(--accent);
+    background: var(--accent-soft); border: 0; border-radius: 999px; padding: 6px 12px; cursor: pointer; flex: none;
+  }
+  .reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
   @media (prefers-reduced-motion: reduce) { .chev { transition: none; } .tail { animation: none; } }
 </style>
 </head>
@@ -124,34 +150,83 @@
 
   <main class="days" id="days"></main>
 
+  <details class="shop" id="shop">
+    <summary>
+      <h2>Список покупок на неделю</h2>
+      <span class="count" id="count"></span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </summary>
+    <ul class="shoplist" id="shoplist"></ul>
+    <div class="shopfoot">
+      <span class="note">Соль, перец, сахар и масло не указаны.</span>
+      <button class="reset" id="reset" type="button">Снять отметки</button>
+    </div>
+  </details>
+
   <footer>Приятного аппетита!</footer>
 </div>
 
 <script>
   // ===== Edit only this block each week =====
+  // Each meal: ["Dish", ["product", "product", ...]]
   const WEEK_START = "2026-11-23"; // Monday, YYYY-MM-DD
   const MENU = [
-    ["Горячие бутерброды с ветчиной, сыром и помидорами.",
-     "Жареная картошка с грибами и луком, солёные огурчики.",
-     "Куриные рулетики в лаваше с овощами и сыром."],
-    ["Овсяная каша с бананом и шоколадом.",
-     "Суп с фрикадельками, картофелем и вермишелью, чесночные гренки.",
-     "Горячие бутерброды с моцареллой и помидорами на сковороде."],
-    ["Блинчики с творогом или вареньем.",
-     "Салат «Цезарь» с курицей, черри, сухариками, пармезаном и соусом.",
-     "Блины с мясным фаршем, луком и сметаной."],
-    ["Тосты с творожным сыром, огурцом и ветчиной.",
-     "Спагетти с курицей и грибами в сливочном соусе.",
-     "Плов."],
-    ["Рисовая каша на молоке с ягодами.",
-     "Гречка с фрикадельками в томатно-сметанной подливке, овощной салат.",
-     "Жареные картофельные дольки с курицей и сырным соусом."],
-    ["Горячие сэндвичи с ветчиной и сыром.",
-     "Поке с рисом, курицей терияки, авокадо, огурцом, морковью и кунжутом.",
-     "Домашние панини с ветчиной, сыром, айсбергом, помидорами и солёным огурчиком на сковороде."],
-    ["Панкейки с бананом и шоколадной пастой.",
-     "Домашняя шаурма с курицей, овощами и чесночным соусом.",
-     "Мини-пиццы на тортильях с ветчиной, грибами и сыром на сковороде."]
+    [ // Понедельник
+      ["Горячие бутерброды с ветчиной, сыром и помидорами.",
+        ["батон", "ветчина", "сыр", "помидоры"]],
+      ["Жареная картошка с грибами и луком, солёные огурчики.",
+        ["картофель", "шампиньоны", "лук", "солёные огурцы"]],
+      ["Куриные рулетики в лаваше с овощами и сыром.",
+        ["лаваш", "куриное филе", "помидоры", "огурцы", "сыр", "листья салата", "сметана"]]
+    ],
+    [ // Вторник
+      ["Овсяная каша с бананом и шоколадом.",
+        ["овсяные хлопья", "молоко", "бананы", "шоколад"]],
+      ["Суп с фрикадельками, картофелем и вермишелью, чесночные гренки.",
+        ["фарш", "яйца", "картофель", "вермишель", "морковь", "лук", "батон", "чеснок", "зелень"]],
+      ["Горячие бутерброды с моцареллой и помидорами на сковороде.",
+        ["батон", "моцарелла", "помидоры"]]
+    ],
+    [ // Среда
+      ["Блинчики с творогом или вареньем.",
+        ["мука", "молоко", "яйца", "творог", "варенье"]],
+      ["Салат «Цезарь» с курицей, черри, сухариками, пармезаном и соусом.",
+        ["куриное филе", "салат романо", "помидоры черри", "сухарики", "пармезан", "соус «Цезарь»"]],
+      ["Блины с мясным фаршем, луком и сметаной.",
+        ["мука", "молоко", "яйца", "фарш", "лук", "сметана"]]
+    ],
+    [ // Четверг
+      ["Тосты с творожным сыром, огурцом и ветчиной.",
+        ["тостовый хлеб", "творожный сыр", "огурцы", "ветчина"]],
+      ["Спагетти с курицей и грибами в сливочном соусе.",
+        ["спагетти", "куриное филе", "шампиньоны", "сливки", "лук", "чеснок", "пармезан"]],
+      ["Плов.",
+        ["рис для плова", "мясо для плова", "морковь", "лук", "чеснок", "специи для плова"]]
+    ],
+    [ // Пятница
+      ["Рисовая каша на молоке с ягодами.",
+        ["круглый рис", "молоко", "ягоды"]],
+      ["Гречка с фрикадельками в томатно-сметанной подливке, овощной салат.",
+        ["гречка", "фарш", "яйца", "лук", "томатная паста", "сметана", "огурцы", "помидоры"]],
+      ["Жареные картофельные дольки с курицей и сырным соусом.",
+        ["картофель", "куриное филе", "сырный соус"]]
+    ],
+    [ // Суббота
+      ["Горячие сэндвичи с ветчиной и сыром.",
+        ["тостовый хлеб", "ветчина", "сыр"]],
+      ["Поке с рисом, курицей терияки, авокадо, огурцом, морковью и кунжутом.",
+        ["рис для суши", "куриное филе", "соус терияки", "авокадо", "огурцы", "морковь", "кунжут"]],
+      ["Домашние панини с ветчиной, сыром, айсбергом, помидорами и солёным огурчиком на сковороде.",
+        ["чиабатта", "ветчина", "сыр", "салат айсберг", "помидоры", "солёные огурцы"]]
+    ],
+    [ // Воскресенье
+      ["Панкейки с бананом и шоколадной пастой.",
+        ["мука", "молоко", "яйца", "разрыхлитель", "бананы", "шоколадная паста"]],
+      ["Домашняя шаурма с курицей, овощами и чесночным соусом.",
+        ["лаваш", "куриное филе", "капуста", "помидоры", "огурцы", "чеснок", "сметана"]],
+      ["Мини-пиццы на тортильях с ветчиной, грибами и сыром на сковороде.",
+        ["тортильи", "ветчина", "шампиньоны", "моцарелла", "томатный соус"]]
+    ]
   ];
   // ===========================================
 
@@ -186,12 +261,51 @@
         <span class="chev" aria-hidden="true">▾</span>
       </summary>
       <div class="meals">
-        ${meals.map((t, j) => `
-          <div class="meal"><div class="mlabel">${MEAL_NAMES[j]}</div><div class="mtext">${esc(t)}</div></div>
+        ${meals.map(([t, buy], j) => `
+          <div class="meal">
+            <div class="mlabel">${MEAL_NAMES[j]}</div>
+            <div class="mtext">
+              ${esc(t)}
+              <div class="buy">${buy.map(p => `<span class="chip">${esc(p)}</span>`).join("")}</div>
+            </div>
+          </div>
         `).join("")}
       </div>
     </details>
   `).join("");
+
+  // Weekly shopping list: every product once, with how many dishes need it.
+  const uses = new Map();
+  MENU.flat().forEach(([, buy]) => buy.forEach(p => uses.set(p, (uses.get(p) || 0) + 1)));
+  const items = [...uses.keys()].sort((a, b) => a.localeCompare(b, "ru"));
+
+  const KEY = "shop-" + WEEK_START;
+  let checked = new Set();
+  try { checked = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...checked])); } catch (e) {} };
+
+  const list = document.getElementById("shoplist");
+  const countEl = document.getElementById("count");
+  const updateCount = () => { countEl.textContent = (items.length - checked.size) + " из " + items.length; };
+
+  list.innerHTML = items.map((p, k) => `
+    <li><label for="item-${k}">
+      <input type="checkbox" id="item-${k}" data-p="${esc(p)}"${checked.has(p) ? " checked" : ""}>
+      <span class="name">${esc(p)}</span>
+      ${uses.get(p) > 1 ? `<span class="used">в ${uses.get(p)} блюдах</span>` : ""}
+    </label></li>
+  `).join("");
+
+  list.addEventListener("change", e => {
+    const p = e.target.dataset.p;
+    e.target.checked ? checked.add(p) : checked.delete(p);
+    save(); updateCount();
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    checked.clear(); save(); updateCount();
+    list.querySelectorAll("input").forEach(i => { i.checked = false; });
+  });
+  updateCount();
 </script>
 </body>
 </html>
