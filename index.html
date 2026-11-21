@@ -18,6 +18,8 @@
     --accent-soft: #f8e3ea;
     --herb: #4f6b3a;
     --herb-soft: #e6eedc;
+    --cat: #f2c48d;
+    --cat-line: #6b4a2e;
     --font-hand: "Caveat", "Segoe Print", cursive;
     --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
   }
@@ -25,12 +27,14 @@
     :root:not([data-theme="light"]) {
       --bg: #171a15; --card: #20241d; --fg: #eef1e8; --muted: #a2ab98; --line: #333a2d;
       --accent: #f07a9c; --accent-soft: #3a2029; --herb: #a9c78e; --herb-soft: #26301f;
+      --cat: #e0aa72; --cat-line: #3b2716;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #171a15; --card: #20241d; --fg: #eef1e8; --muted: #a2ab98; --line: #333a2d;
     --accent: #f07a9c; --accent-soft: #3a2029; --herb: #a9c78e; --herb-soft: #26301f;
+    --cat: #e0aa72; --cat-line: #3b2716;
     color-scheme: dark;
   }
 
@@ -43,7 +47,11 @@
     display: grid; gap: 20px;
   }
 
-  header { display: grid; gap: 4px; }
+  header { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; }
+  .htext { display: grid; gap: 4px; min-width: 0; }
+  .cat { width: 96px; height: auto; flex: none; }
+  .tail { transform-origin: 88px 88px; animation: wag 2.4s ease-in-out infinite; }
+  @keyframes wag { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg); } }
   .hello { font-family: var(--font-hand); font-size: 1.7rem; color: var(--accent); line-height: 1.1; }
   h1 { margin: 0; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; }
   .range { color: var(--muted); font-weight: 500; }
@@ -82,16 +90,36 @@
 
   footer { text-align: center; font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
 
-  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } .tail { animation: none; } }
 </style>
 </head>
 <body>
 
 <div class="wrap">
   <header>
-    <div class="hello">Наше меню</div>
-    <h1>Что готовим на неделе</h1>
-    <div class="range" id="range"></div>
+    <div class="htext">
+      <div class="hello">Наше меню</div>
+      <h1>Что готовим на неделе</h1>
+      <div class="range" id="range"></div>
+    </div>
+    <svg class="cat" viewBox="0 0 120 104" role="img" aria-label="Котик">
+      <path class="tail" d="M88 88 C112 86 114 60 102 52" fill="none" stroke="var(--cat-line)" stroke-width="9" stroke-linecap="round"/>
+      <path class="tail" d="M88 88 C112 86 114 60 102 52" fill="none" stroke="var(--cat)" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="60" cy="80" rx="31" ry="21" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5"/>
+      <polygon points="37,32 35,7 56,22" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+      <polygon points="83,32 85,7 64,22" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5" stroke-linejoin="round"/>
+      <polygon points="40,27 39,14 50,22" fill="var(--accent-soft)"/>
+      <polygon points="80,27 81,14 70,22" fill="var(--accent-soft)"/>
+      <circle cx="60" cy="45" r="26" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5"/>
+      <path d="M45 44 q5 -6 10 0 M65 44 q5 -6 10 0" fill="none" stroke="var(--cat-line)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="44" cy="53" r="4.5" fill="var(--accent)" opacity=".28"/>
+      <circle cx="76" cy="53" r="4.5" fill="var(--accent)" opacity=".28"/>
+      <path d="M57 50 h6 l-3 3.5 z" fill="var(--accent)"/>
+      <path d="M54 56 q3 3 6 0 q3 3 6 0" fill="none" stroke="var(--cat-line)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M38 50 l-12 -2 M38 55 l-12 2 M82 50 l12 -2 M82 55 l12 2" stroke="var(--cat-line)" stroke-width="1.6" stroke-linecap="round"/>
+      <ellipse cx="49" cy="99" rx="8" ry="5" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5"/>
+      <ellipse cx="71" cy="99" rx="8" ry="5" fill="var(--cat)" stroke="var(--cat-line)" stroke-width="2.5"/>
+    </svg>
   </header>
 
   <main class="days" id="days"></main>
@@ -108,22 +136,22 @@
      "Куриные рулетики в лаваше с овощами и сыром."],
     ["Овсяная каша с бананом и шоколадом.",
      "Суп с фрикадельками, картофелем и вермишелью, чесночные гренки.",
-     "Запечённые бутерброды с моцареллой и помидорами."],
+     "Горячие бутерброды с моцареллой и помидорами на сковороде."],
     ["Блинчики с творогом или вареньем.",
      "Салат «Цезарь» с курицей, черри, сухариками, пармезаном и соусом.",
      "Блины с мясным фаршем, луком и сметаной."],
     ["Тосты с творожным сыром, огурцом и ветчиной.",
      "Спагетти с курицей и грибами в сливочном соусе.",
-     "Кесадилья с курицей, сыром и овощами."],
+     "Жареный рис с курицей, морковью, кукурузой и соевым соусом."],
     ["Рисовая каша на молоке с ягодами.",
      "Гречка с фрикадельками в томатно-сметанной подливке, овощной салат.",
-     "Картофельные дольки с курицей и сырным соусом."],
+     "Жареные картофельные дольки с курицей и сырным соусом."],
     ["Горячие сэндвичи с ветчиной и сыром.",
      "Поке с рисом, курицей терияки, авокадо, огурцом, морковью и кунжутом.",
-     "Домашние панини с курицей, сыром и помидорами."],
+     "Домашние панини с курицей, сыром и помидорами на сковороде."],
     ["Панкейки с бананом и шоколадной пастой.",
      "Домашняя шаурма с курицей, овощами и чесночным соусом.",
-     "Мини-пиццы на тортильях с ветчиной, грибами и сыром."]
+     "Мини-пиццы на тортильях с ветчиной, грибами и сыром на сковороде."]
   ];
   // ===========================================
 
